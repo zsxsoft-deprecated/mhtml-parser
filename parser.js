@@ -13,27 +13,50 @@ function getContent(key, content) {
     return content.substr(colonPosition + 1, content.length).trim();
 }
 
-function parseByString(string) {
+function initializeOptions(unformattedOption) {
+    var option = {};
+    if (unformattedOption) {
+        if (Object.assign) { // PonyFill
+            option = Object.assign({}, unformattedOption);
+        } else {
+            option = objectAssign({}, unformattedOption);
+        }
+    }
+    option.charset = option.charset || "utf-8";
+    option.decodeQuotedPrintable = option.decodeQuotedPrintable || false;
+    option.decodeBase64ToBuffer = option.decodeBase64ToBuffer || false;
+    return option;
+}
+
+function parseByString(string, unformattedOption) {
     var ret = {
         err: null,
         data: {},
     };
+    var option = initializeOptions(unformattedOption);
     var parseLine = parse(ret);
     string.split("\n").forEach(parseLine);
     return ret;
 }
 
-function parseByStream(readStream, charset, callback) {
+
+function parseByStream(readStream, unformattedOption, callback) {
     var ret = {
         err: null,
         data: {},
     };
     var parseLine = parse(ret);
     var calledBack = false;
+    var option = initializeOptions(unformattedOption);
+
+
+
     readStream.on("line", function (line, lineIndex) {
-        var parseResult = parseLine(iconv.decode(line, charset), lineIndex - 1);
+        var parseResult = parseLine(iconv.decode(line, option.charset), lineIndex - 1, option);
         if (parseResult !== true) {
-            if (!calledBack) callback({err: parseResult});
+            if (!calledBack) callback({
+                err: parseResult
+            });
             calledBack = true;
             readStream.emit("close");
         }
@@ -58,7 +81,7 @@ function parse(ret) {
     var singleObject = null;
     var dataArray = [];
 
-    var parseLine = function (line, lineIndex) {
+    var parseLine = function (line, lineIndex, option) {
         line = line.trim();
         if (line == boundary) {
             READING_STATE = READING_STATE_PART_HEADER;
@@ -72,7 +95,7 @@ function parse(ret) {
             } else {
                 singleObject = objectAssign({}, singleObjectTemplate);
             }
-            
+
             dataArray = [];
         }
 

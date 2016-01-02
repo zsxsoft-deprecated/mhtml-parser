@@ -1,13 +1,13 @@
 var parser = require("./parser");
 module.exports = {
-    parse: function (fileData) {
+    parse: function (fileData, option) {
         return parser.parseByString(fileData);
     },
-    loadFile: function (filePath, charset, callback) {
+    loadFile: function (filePath, option, callback) {
         var readline = require("linebyline");
         var readStream = readline(filePath, {
             retainBuffer: true
         });
-        return parser.parseByStream(readStream, charset, callback);
+        return parser.parseByStream(readStream, option, callback);
     }
 }
