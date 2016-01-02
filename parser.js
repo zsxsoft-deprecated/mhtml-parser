@@ -4,6 +4,7 @@ var READING_STATE_PART_CONTENT = "READING_STATE_PART_CONTENT";
 var READING_STATE_INITIALIZED = "READING_STATE_INITIALIZED";
 var iconv = require("iconv-lite");
 var objectAssign = require('object-assign');
+var quotedPrintable = require('quoted-printable');
 
 
 function getContent(key, content) {
@@ -35,7 +36,9 @@ function parseByString(string, unformattedOption) {
     };
     var option = initializeOptions(unformattedOption);
     var parseLine = parse(ret);
-    string.split("\n").forEach(parseLine);
+    string.split("\n").forEach(function(line, lineIndex) {
+        parseLine(line, lineIndex, option);
+    });
     return ret;
 }
 
@@ -48,8 +51,6 @@ function parseByStream(readStream, unformattedOption, callback) {
     var parseLine = parse(ret);
     var calledBack = false;
     var option = initializeOptions(unformattedOption);
-
-
 
     readStream.on("line", function (line, lineIndex) {
         var parseResult = parseLine(iconv.decode(line, option.charset), lineIndex - 1, option);
@@ -89,6 +90,10 @@ function parse(ret) {
             if (singleObject != null) {
                 ret.data[singleObject.name] = singleObject;
                 ret.data[singleObject.name].data = dataArray.join("\n").trim();
+
+                if (option.decodeQuotedPrintable && ret.data[singleObject.name].encoding == "quoted-printable") {
+                     ret.data[singleObject.name].data = quotedPrintable.decode(ret.data[singleObject.name].data);
+                }
             }
             if (Object.assign) { // PonyFill
                 singleObject = Object.assign({}, singleObjectTemplate);
@@ -125,7 +130,7 @@ function parse(ret) {
                 singleObject.location = contentLocation;
                 singleObject.name = contentLocation.substr(contentLocation.lastIndexOf("/") + 1);
             } else if (contentTransferEncoding != null) {
-                singleObject.encoding = contentTransferEncoding;
+                singleObject.encoding = contentTransferEncoding.toLowerCase();
             }
         } else if (READING_STATE == READING_STATE_PART_CONTENT) {
             dataArray.push(line);

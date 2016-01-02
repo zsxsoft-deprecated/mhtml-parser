@@ -26,9 +26,7 @@ describe('Simple Test', function () {
 
 	describe('Load file by user', function () {
 		it('json should be equal', function (done) {
-			var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/simple/simple.mht", null), {
-				charset: "gbk"
-			}));
+			var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/simple/simple.mht", null), "gbk"), {});
 			var ret = deepDiff(data, json);
 			if (typeof ret == "undefined" || ret === null) {
 				done();
@@ -39,6 +37,27 @@ describe('Simple Test', function () {
 		});
 	});
 });
+
+describe('Remove Quoted-printable', function () {
+	var json = require("./simple/simple-removedQuotedPrintable.json");
+	it('json should be equal', function (done) {
+		parser.loadFile(__dirname + "/simple/simple.mht", {
+			charset: "gbk",
+			decodeQuotedPrintable: true
+		}, function (err, data) {
+			if (err) throw err;
+			var ret = deepDiff(data, json);
+			if (typeof ret == "undefined" || ret === null) {
+				done();
+			} else {
+				console.error(ret);
+				throw "Not equal";
+			}
+		});
+	});
+
+});
+
 
 describe('error-versionNoSupported', function () {
 	describe('Test', function () {

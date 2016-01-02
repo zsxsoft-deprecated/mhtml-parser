@@ -13,7 +13,8 @@
   "dependencies": {
     "iconv-lite": "^0.4.13",
     "linebyline": "^1.3.0",
-    "object-assign": "^4.0.1"
+    "object-assign": "^4.0.1",
+    "quoted-printable": "^1.0.0"
   },
   "devDependencies": {
     "blanket": "^1.2.1",

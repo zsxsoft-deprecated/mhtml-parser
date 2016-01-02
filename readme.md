@@ -8,19 +8,20 @@ MHTML Parser
 
 A MHTML(.mht) file parser.
 
-*Only tested in .mht converted by Word 2016. Didn't remove ``3D`` and convert base64 to buffer yet.*
+*Only tested in .mht converted by Word 2016. Didn't convert base64 to buffer yet.*
 
 ## Installion
 ```bash
 npm install mhtml-parser --save
 ```
 
-
 ## Usage
 
 ### Parse by filename (Async) (Recommended)
 ```javascript
-parser.loadFile(__dirname + "/simple/simple.mht", "gbk", function(err, data) {
+parser.loadFile(__dirname + "/simple/simple.mht", {
+    charset: "gbk" 
+}, function(err, data) {
     if (err) throw err;
     console.log(data);
 });
@@ -28,11 +29,21 @@ parser.loadFile(__dirname + "/simple/simple.mht", "gbk", function(err, data) {
 
 ### Parse by string (Sync)
 ```javascript
-var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/simple/simple.mht", null), "gbk"));
+var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/simple/simple.mht", null), "gbk"), {});
 
 ```
 
-### Example Result
+### Example
+#### Example Option 
+```javascript
+{
+    charset: "gbk", // default: utf-8 
+    decodeQuotedPrintable: true, // default: false, see: https://github.com/mathiasbynens/quoted-printable
+    
+}
+```
+
+#### Example Result
 ```javascript
 {
     "err": null,
@@ -42,35 +53,35 @@ var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/si
             "location": "file:///C:/B133AD19/Hey.htm",
             "encoding": "quoted-printable",
             "type": "text/html; charset=\"gb2312\"",
-            "data": "HTML Data"
+            "data": ".....<span\nlang=EN-US>Hey, I’m zsx!</span></p>\n\n<p class=MsoNormal><span style='font-family:等线;mso-ascii-font-family:Calibri;\nmso-ascii-theme-font:minor-latin;mso-fareast-font-family:等线;mso-fareast-theme-font:\nminor-fareast;mso-hansi-font-family:Calibri;mso-hansi-theme-font:minor-latin'>我只是在测试文件而已（笑）</span></p>..."
         },
         "item0001.xml": {
             "name": "item0001.xml",
             "location": "file:///C:/B133AD19/Hey.files/item0001.xml",
             "encoding": "quoted-printable",
             "type": "text/xml",
-            "data": "<?xml version=3D\"1.0\" encoding=3D\"UTF-8\" standalone=3D\"no\"?><b:Sources xmln=\ns:b=3D\"http://schemas.openxmlformats.org/officeDocument/2006/bibliography\" =\nxmlns=3D\"http://schemas.openxmlformats.org/officeDocument/2006/bibliography=\n\" SelectedStyle=3D\"\\APASixthEditionOfficeOnline.xsl\" StyleName=3D\"APA\" Vers=\nion=3D\"6\"></b:Sources>"
+            "data": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><b:Sources xmlns:b=\"http://schemas.openxmlformats.org/officeDocument/2006/bibliography\" xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/bibliography\" SelectedStyle=\"\\APASixthEditionOfficeOnline.xsl\" StyleName=\"APA\" Version=\"6\"></b:Sources>"
         },
         "props002.xml": {
             "name": "props002.xml",
             "location": "file:///C:/B133AD19/Hey.files/props002.xml",
             "encoding": "quoted-printable",
             "type": "text/xml",
-            "data": "<?xml version=3D\"1.0\" encoding=3D\"UTF-8\" standalone=3D\"no\"?>\n<ds:datastoreItem ds:itemID=3D\"{373E907E-BE5B-430B-A4E0-C91998BBC7EF}\" xmln=\ns:ds=3D\"http://schemas.openxmlformats.org/officeDocument/2006/customXml\"><d=\ns:schemaRefs><ds:schemaRef ds:uri=3D\"http://schemas.openxmlformats.org/offi=\nceDocument/2006/bibliography\"/></ds:schemaRefs></ds:datastoreItem>"
+            "data": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<ds:datastoreItem ds:itemID=\"{373E907E-BE5B-430B-A4E0-C91998BBC7EF}\" xmlns:ds=\"http://schemas.openxmlformats.org/officeDocument/2006/customXml\"><ds:schemaRefs><ds:schemaRef ds:uri=\"http://schemas.openxmlformats.org/officeDocument/2006/bibliography\"/></ds:schemaRefs></ds:datastoreItem>"
         },
         "themedata.thmx": {
             "name": "themedata.thmx",
             "location": "file:///C:/B133AD19/Hey.files/themedata.thmx",
             "encoding": "base64",
             "type": "application/vnd.ms-officetheme",
-            "data": "=_="
+            "data": "Base64 String"
         },
         "colorschememapping.xml": {
             "name": "colorschememapping.xml",
             "location": "file:///C:/B133AD19/Hey.files/colorschememapping.xml",
             "encoding": "quoted-printable",
             "type": "text/xml",
-            "data": "<?xml version=3D\"1.0\" encoding=3D\"UTF-8\" standalone=3D\"yes\"?>\n<a:clrMap xmlns:a=3D\"http://schemas.openxmlformats.org/drawingml/2006/main\"=\nbg1=3D\"lt1\" tx1=3D\"dk1\" bg2=3D\"lt2\" tx2=3D\"dk2\" accent1=3D\"accent1\" accent=\n2=3D\"accent2\" accent3=3D\"accent3\" accent4=3D\"accent4\" accent5=3D\"accent5\" a=\nccent6=3D\"accent6\" hlink=3D\"hlink\" folHlink=3D\"folHlink\"/>"
+            "data": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<a:clrMap xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"bg1=\"lt1\" tx1=\"dk1\" bg2=\"lt2\" tx2=\"dk2\" accent1=\"accent1\" accent2=\"accent2\" accent3=\"accent3\" accent4=\"accent4\" accent5=\"accent5\" accent6=\"accent6\" hlink=\"hlink\" folHlink=\"folHlink\"/>"
         },
         "image001.jpg": {
             "name": "image001.jpg",
@@ -85,8 +96,7 @@ var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/si
 ```
 
 ## TODO
-1. Auto remove ``3D`` tag
-2. Auto convert base64 string to buffer
+1. Auto convert base64 string to buffer
 
 ## License
 The MIT License
