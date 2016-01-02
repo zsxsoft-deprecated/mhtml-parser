@@ -8,7 +8,7 @@ MHTML Parser
 
 A MHTML(.mht) file parser.
 
-*Only tested in .mht converted by Word 2016. Didn't convert base64 to buffer yet.*
+*Only tested in .mht converted by Word 2016.*
 
 ## Installion
 ```bash
@@ -96,7 +96,6 @@ var data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/si
 ```
 
 ## TODO
-1. Auto convert base64 string to buffer
 
 ## License
 The MIT License
