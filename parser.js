@@ -65,7 +65,7 @@ function parse(ret) {
 
             if (singleObject != null) {
                 ret.data[singleObject.name] = singleObject;
-                ret.data[singleObject.name].data = dataArray.join("\n");
+                ret.data[singleObject.name].data = dataArray.join("\n").trim();
             }
             if (Object.assign) { // PonyFill
                 singleObject = Object.assign({}, singleObjectTemplate);
