@@ -3,6 +3,8 @@ var READING_STATE_PART_HEADER = "READING_STATE_PART_HEADER";
 var READING_STATE_PART_CONTENT = "READING_STATE_PART_CONTENT";
 var READING_STATE_INITIALIZED = "READING_STATE_INITIALIZED";
 var iconv = require("iconv-lite");
+var objectAssign = require('object-assign');
+
 
 function getContent(key, content) {
     var colonPosition = content.indexOf(":");
@@ -65,7 +67,12 @@ function parse(ret) {
                 ret.data[singleObject.name] = singleObject;
                 ret.data[singleObject.name].data = dataArray.join("\n");
             }
-            singleObject = Object.assign({}, singleObjectTemplate);
+            if (Object.assign) { // PonyFill
+                singleObject = Object.assign({}, singleObjectTemplate);
+            } else {
+                singleObject = objectAssign({}, singleObjectTemplate);
+            }
+            
             dataArray = [];
         }
 
