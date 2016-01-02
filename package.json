@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "cover": "istanbul cover _mocha", 
+    "cover": "istanbul cover _mocha",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
-  "author": "zsx<zsx@zsxsoft.com>",
+  "author": "zsx <zsx@zsxsoft.com>",
   "license": "MIT",
   "dependencies": {
     "iconv-lite": "^0.4.13",
@@ -21,5 +21,20 @@
     "istanbul": "^0.4.1",
     "mocha": "^2.3.4",
     "mocha-lcov-reporter": "^1.0.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zsxsoft/mhtml-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zsxsoft/mhtml-parser/issues"
+  },
+  "homepage": "https://github.com/zsxsoft/mhtml-parser#readme",
+  "keywords": [
+    "mhtml",
+    "mht"
+  ]
 }
