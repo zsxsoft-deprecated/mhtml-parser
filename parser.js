@@ -3,9 +3,8 @@ var READING_STATE_PART_HEADER = "READING_STATE_PART_HEADER";
 var READING_STATE_PART_CONTENT = "READING_STATE_PART_CONTENT";
 var READING_STATE_INITIALIZED = "READING_STATE_INITIALIZED";
 var iconv = require("iconv-lite");
-var objectAssign = require('object-assign');
 var quotedPrintable = require('quoted-printable');
-
+var utils = require('./utils');
 
 function getContent(key, content) {
     var colonPosition = content.indexOf(":");
@@ -16,13 +15,7 @@ function getContent(key, content) {
 
 function initializeOptions(unformattedOption) {
     var option = {};
-    if (unformattedOption) {
-        if (Object.assign) { // PonyFill
-            option = Object.assign({}, unformattedOption);
-        } else {
-            option = objectAssign({}, unformattedOption);
-        }
-    }
+    option = utils.objectAssign({}, unformattedOption);
     option.charset = option.charset || "utf-8";
     option.decodeQuotedPrintable = option.decodeQuotedPrintable || false;
     option.decodeBase64ToBuffer = option.decodeBase64ToBuffer || false;
@@ -95,11 +88,7 @@ function parse(ret) {
                      ret.data[singleObject.name].data = quotedPrintable.decode(ret.data[singleObject.name].data);
                 }
             }
-            if (Object.assign) { // PonyFill
-                singleObject = Object.assign({}, singleObjectTemplate);
-            } else {
-                singleObject = objectAssign({}, singleObjectTemplate);
-            }
+            singleObject = utils.objectAssign({}, singleObjectTemplate);
 
             dataArray = [];
         }
