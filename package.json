@@ -1,6 +1,6 @@
 {
   "name": "mhtml-parser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MHTML file parser",
   "main": "index.js",
   "scripts": {

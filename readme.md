@@ -28,7 +28,7 @@ parser.loadFile(__dirname + "/simple/simple.mht", {
 });
 ```
 
-### Parse by filename and read content manually
+### Parse by filename and read content manually (Only tested in Windows & Linux)
 ```javascript
 let parser = require('mhtml-parser');
 let fs = require("fs");
@@ -65,12 +65,14 @@ To convert binary data to detected charset. Useless when **readMode == READ_MODE
 ### decodeQuotedPrintable: boolean
 Default Value: false
 
-To decode quoted-printable data, which is something like ``a=3D1``. Useless when **readMode == READ_MODE_POSITION**.
+To decode quoted-printable data, which is something like ``&lt;a href=3D\"http://zsxsoft.com\"&gt;``. Useless when **readMode == READ_MODE_POSITION**.
 
 See here: https://github.com/mathiasbynens/quoted-printable
 
-### readMode
-Default Value: constants.
+### readMode: string
+Default Value: constants.READ_MODE_ALL
+
+Avaiable items list here: 
 * **READ_MODE_ALL** - Read the whole file to the memory. You can directly get each file's content from ``data.fileName.data``
 * **READ_MODE_POSITION** - Scan the whole file and only get the position and length of each file but not reading them. 
 
