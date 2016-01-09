@@ -4,6 +4,15 @@ var iconv = require("iconv-lite");
 var fs = require("fs");
 var deepDiff = require("deep-diff");
 
+
+function newDeepDiff(lhs, rhs) {
+	return deepDiff.observableDiff(lhs, rhs, function (d) {
+		if (d.kind == "E" && (d.path[d.path.lenth - 1] == "startPosition" || d.path[d.path.lenth - 1] == "bufferLength")) {
+			deepDiff.applyChange(lhs, rhs, d);
+		}
+	});
+}
+
 describe('Remove Quoted-printable', function () {
 	var json = JSON.parse(fs.readFileSync(__dirname + '/simple/simple-removedQuotedPrintable.json', 'utf-8'));//require("./simple/simple-removedQuotedPrintable.json");
 	it('JSON should be equal', function (done) {
@@ -17,7 +26,7 @@ describe('Remove Quoted-printable', function () {
 				done();
 				return;
 			}
-			var ret = deepDiff(data, json);
+			var ret = newDeepDiff(data, json);
 			if (typeof ret == "undefined" || ret === null) {
 				done();
 			} else {
