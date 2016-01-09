@@ -27,17 +27,18 @@ parser.loadFile(__dirname + "/simple/simple.mht", {
     console.log(data);
 });
 ```
+
 ### Parse by filename and read content manually
 ```javascript
 let parser = require('mhtml-parser');
 let fs = require("fs");
+let fileName = 'image001.jpg';
 
 parser.loadFile(__dirname + "/simple/simple.mht", {
     charset: "gbk", 
     readMode: parser.constants.READ_MODE_POSITION
 }, function(err, data) {
     if (err) throw err;
-    let fileName = 'image001.jpg';
     fs.open(__dirname + "/test/simple/simple.mht", "r", function(err, fd) {
 	    let buffer = new Buffer(data[fileName].bufferLength);
 	    fs.readSync(fd, buffer, 0, data[fileName].bufferLength, data[fileName].startPosition); 

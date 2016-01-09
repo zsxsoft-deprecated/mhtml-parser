@@ -36,9 +36,9 @@ function parseByString(string, unformattedOption) {
     option.readMode = READ_MODE_ALL;
     var parseLine = parse(ret);
     string.split("\n").forEach(function(line, lineIndex) {
-        parseLine(line, lineIndex, 0, option);
+        parseLine(line, lineIndex, -1, option);
     });
-    return ret;
+    return ret.data;
 }
 
 
@@ -54,9 +54,7 @@ function parseByStream(readStream, unformattedOption, callback) {
     readStream.on("line", function (line, lineIndex, byteCount) {
         var parseResult = parseLine(iconv.decode(line, option.charset), lineIndex - 1, byteCount, option);
         if (parseResult !== true) {
-            if (!calledBack) callback({
-                err: parseResult
-            });
+            if (!calledBack) callback(parseResult, null);
             calledBack = true;
             readStream.emit("close");
         }
@@ -104,7 +102,7 @@ function parse(ret) {
                 }
 
                 ret.data[singleObject.name].startPosition = startPosition;
-                ret.data[singleObject.name].bufferLength = byteCount - boundaryLength - startPosition - 1 - 1; // To remove the last empty line
+                ret.data[singleObject.name].bufferLength = startPosition == 0 ? 0 : byteCount - boundaryLength - startPosition - 1 - 1; // To remove the last empty line
                 startPosition = 0;
 
             }
