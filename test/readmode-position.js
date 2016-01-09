@@ -6,7 +6,7 @@ var deepDiff = require("deep-diff");
 
 
 var removeLineTag = function(string) {
-	return string.replace(/\n|\r/g, "");
+	return string.replace(/\n|\r| |	/g, "");
 }
 
 describe('READ_MODE_POSITION', function () {
@@ -20,11 +20,10 @@ describe('READ_MODE_POSITION', function () {
 				if (err) throw err;
 				fs.open(__dirname + "/simple/simple.mht", "r", function (err, fd) {
 					Object.keys(data).forEach(function (fileName) {
-						if (fileName != "item0001.xml") return;
 						var buffer = new Buffer(data[fileName].bufferLength);
 						fs.readSync(fd, buffer, 0, data[fileName].bufferLength, data[fileName].startPosition);
 						var convertedBuffer = removeLineTag(iconv.decode(buffer, 'gbk'));
-						var comparedString = removeLineTag(originalReadData[fileName].data);
+						var comparedString = removeLineTag(iconv.decode(new Buffer(originalReadData[fileName].data), 'utf-8'));
 						assert(convertedBuffer == comparedString);
 					});
 					done();
