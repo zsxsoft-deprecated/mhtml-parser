@@ -28,25 +28,19 @@ function initializeOptions(unformattedOption) {
 }
 
 function parseByString(string, unformattedOption) {
-    var ret = {
-        err: null,
-        data: {},
-    };
+    var ret = {};
     var option = initializeOptions(unformattedOption);
     option.readMode = READ_MODE_ALL;
     var parseLine = parse(ret);
     string.split("\n").forEach(function(line, lineIndex) {
         parseLine(line, lineIndex, -1, option);
     });
-    return ret.data;
+    return ret;
 }
 
 
 function parseByStream(readStream, unformattedOption, callback) {
-    var ret = {
-        err: null,
-        data: {},
-    };
+    var ret = {};
     var parseLine = parse(ret);
     var calledBack = false;
     var option = initializeOptions(unformattedOption);
@@ -61,7 +55,7 @@ function parseByStream(readStream, unformattedOption, callback) {
     });
     readStream.on("end", function () {
         parseLine = null;
-        if (!calledBack) callback(null, ret.data);
+        if (!calledBack) callback(null, ret);
     })
 }
 
@@ -91,18 +85,18 @@ function parse(ret) {
             READING_STATE = READING_STATE_PART_HEADER;
 
             if (singleObject != null) {
-                ret.data[singleObject.name] = singleObject;
+                ret[singleObject.name] = singleObject;
 
                 if (option.readMode == READ_MODE_ALL) {
-                    ret.data[singleObject.name].data = dataArray.join("\n").trim();
+                    ret[singleObject.name].data = dataArray.join("\n").trim();
 
-                    if (option.decodeQuotedPrintable && ret.data[singleObject.name].encoding == "quoted-printable") {
-                         ret.data[singleObject.name].data = quotedPrintable.decode(ret.data[singleObject.name].data);
+                    if (option.decodeQuotedPrintable && ret[singleObject.name].encoding == "quoted-printable") {
+                         ret[singleObject.name].data = quotedPrintable.decode(ret[singleObject.name].data);
                     }
                 }
 
-                ret.data[singleObject.name].startPosition = startPosition;
-                ret.data[singleObject.name].bufferLength = startPosition == 0 ? 0 : byteCount - boundaryLength - startPosition - 1 - 1; // To remove the last empty line
+                ret[singleObject.name].startPosition = startPosition;
+                ret[singleObject.name].bufferLength = startPosition == 0 ? 0 : byteCount - boundaryLength - startPosition - 1 - 1; // To remove the last empty line
                 startPosition = 0;
 
             }
