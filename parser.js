@@ -23,6 +23,7 @@ function initializeOptions(unformattedOption) {
     option.charset = option.charset || "utf-8";
     option.decodeQuotedPrintable = option.decodeQuotedPrintable || false;
     option.decodeBase64ToBuffer = option.decodeBase64ToBuffer || false;
+    option.readMode = option.readMode || READ_MODE_ALL;
     return option;
 }
 
@@ -32,9 +33,10 @@ function parseByString(string, unformattedOption) {
         data: {},
     };
     var option = initializeOptions(unformattedOption);
+    option.readMode = READ_MODE_ALL;
     var parseLine = parse(ret);
     string.split("\n").forEach(function(line, lineIndex) {
-        parseLine(line, lineIndex, option);
+        parseLine(line, lineIndex, 0, option);
     });
     return ret;
 }
@@ -49,8 +51,8 @@ function parseByStream(readStream, unformattedOption, callback) {
     var calledBack = false;
     var option = initializeOptions(unformattedOption);
 
-    readStream.on("line", function (line, lineIndex) {
-        var parseResult = parseLine(iconv.decode(line, option.charset), lineIndex - 1, option);
+    readStream.on("line", function (line, lineIndex, byteCount) {
+        var parseResult = parseLine(iconv.decode(line, option.charset), lineIndex - 1, byteCount, option);
         if (parseResult !== true) {
             if (!calledBack) callback({
                 err: parseResult
@@ -61,7 +63,7 @@ function parseByStream(readStream, unformattedOption, callback) {
     });
     readStream.on("end", function () {
         parseLine = null;
-        if (!calledBack) callback(null, ret);
+        if (!calledBack) callback(null, ret.data);
     })
 }
 
@@ -69,24 +71,22 @@ function parse(ret) {
 
     var READING_STATE = READING_STATE_INITIALIZED;
     var boundary = "--";
+    var boundaryLength = 2;
     var singleObjectTemplate = {
         name: null,
         location: null,
         encoding: null,
         type: null,
         data: null,
-        position: {
-            begin: 0, 
-            length: 0,
-        }
+        startPosition: 0, 
+        bufferLength: 0, 
     };
     var singleObject = null;
     var dataArray = [];
     var startPosition = 0;
-    var endPosition = 0;
 
-    var parseLine = function (line, lineIndex, option) {
-        position += line.length;
+    var parseLine = function (line, lineIndex, byteCount, option) {
+
         line = line.trim();
         if (line == boundary) {
 
@@ -95,20 +95,20 @@ function parse(ret) {
             if (singleObject != null) {
                 ret.data[singleObject.name] = singleObject;
 
-                if (option.mode == READ_MODE_ALL) {
+                if (option.readMode == READ_MODE_ALL) {
                     ret.data[singleObject.name].data = dataArray.join("\n").trim();
 
                     if (option.decodeQuotedPrintable && ret.data[singleObject.name].encoding == "quoted-printable") {
                          ret.data[singleObject.name].data = quotedPrintable.decode(ret.data[singleObject.name].data);
                     }
                 }
-                ret.data[singleObject.name].position.begin = start;
-                ret.data[singleObject.name].position.length = position - start + 1;
+
+                ret.data[singleObject.name].startPosition = startPosition;
+                ret.data[singleObject.name].bufferLength = byteCount - boundaryLength - startPosition - 1 - 1; // To remove the last empty line
+                startPosition = 0;
 
             }
             singleObject = utils.objectAssign({}, singleObjectTemplate);
-            startPosition = position;
-            endPosition = 0;
             dataArray = [];
         }
 
@@ -123,10 +123,12 @@ function parse(ret) {
             if (contentType != null) {
                 var boundaryString = contentType.split("boundary=")[1];
                 boundary = "--" + boundaryString.substr(1, boundaryString.length - 2);
+                boundaryLength = boundary.length;
             }
         } else if (READING_STATE == READING_STATE_PART_HEADER) {
             if (line == "" || line == "\r") {
                 READING_STATE = READING_STATE_PART_CONTENT;
+                startPosition = byteCount + 1; // To remove the first empty line
                 return true;
             }
             var contentType = getContent("Content-Type", line);
@@ -141,7 +143,7 @@ function parse(ret) {
                 singleObject.encoding = contentTransferEncoding.toLowerCase();
             }
         } else if (READING_STATE == READING_STATE_PART_CONTENT) {
-            if (option.mode == READ_MODE_ALL) {
+            if (option.readMode == READ_MODE_ALL) {
                 dataArray.push(line);
             }
             
