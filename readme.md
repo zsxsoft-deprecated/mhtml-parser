@@ -53,23 +53,26 @@ parser.loadFile(__dirname + "/simple/simple.mht", {
 let parser = require('mhtml-parser');
 let data = parser.parse(iconv.decode(require("fs").readFileSync(__dirname + "/simple/simple.mht", null), "gbk"), {});
 ```
-** In this mode, ``option.readMode`` will always be ``constants.READ_MODE_ALL``.**
+
+**In this mode, ``option.readMode`` will always be ``constants.READ_MODE_ALL``.**
 
 ## Options
 ### charset: String
 Default Value: utf-8
 
-To convert binary data to detected charset.
+To convert binary data to detected charset. Useless when **readMode == READ_MODE_POSITION**.
 
 ### decodeQuotedPrintable: boolean
 Default Value: false
 
-To decode quoted-printable data, which is something like ``a=3D1``. See here: https://github.com/mathiasbynens/quoted-printable
+To decode quoted-printable data, which is something like ``a=3D1``. Useless when **readMode == READ_MODE_POSITION**.
+
+See here: https://github.com/mathiasbynens/quoted-printable
 
 ### readMode
 Default Value: constants.
 * **READ_MODE_ALL** - Read the whole file to the memory. You can directly get each file's content from ``data.fileName.data``
-* **READ_MODE_POSITION** - Scan the whole file and only get the position and length of each file but not reading them. ** Conflict with decodeQuotedPrintable.**
+* **READ_MODE_POSITION** - Scan the whole file and only get the position and length of each file but not reading them. 
 
 
 ## Example Result

@@ -7,8 +7,10 @@ var READ_MODE_ALL = "READ_MODE_ALL";
 var READ_MODE_POSITION = "READ_MODE_POSITION";
 
 var iconv = require("iconv-lite");
+var os = require('os');
 var quotedPrintable = require('quoted-printable');
 var utils = require('./utils');
+var EOLLength = os.EOL.length;
 
 function getContent(key, content) {
     var colonPosition = content.indexOf(":");
@@ -96,7 +98,7 @@ function parse(ret) {
                 }
 
                 ret[singleObject.name].startPosition = startPosition;
-                ret[singleObject.name].bufferLength = startPosition == 0 ? 0 : byteCount - boundaryLength - startPosition - 1 - 1; // To remove the last empty line
+                ret[singleObject.name].bufferLength = startPosition == 0 ? 0 : byteCount - boundaryLength - startPosition - EOLLength; // To remove the last empty line
                 startPosition = 0;
 
             }
