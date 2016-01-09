@@ -9,7 +9,8 @@ module.exports = {
             retainBuffer: true
         });
         return parser.parseByStream(readStream, option, callback);
-    }
+    }, 
+    constants: parser.constants
 }
 /*
 module.exports.loadFile(__dirname + "/test/simple/simple.mht", {

@@ -2,6 +2,10 @@ var READING_STATE_HEADER = "READING_STATE_HEADER";
 var READING_STATE_PART_HEADER = "READING_STATE_PART_HEADER";
 var READING_STATE_PART_CONTENT = "READING_STATE_PART_CONTENT";
 var READING_STATE_INITIALIZED = "READING_STATE_INITIALIZED";
+
+var READ_MODE_ALL = "READ_MODE_ALL";
+var READ_MODE_POSITION = "READ_MODE_POSITION";
+
 var iconv = require("iconv-lite");
 var quotedPrintable = require('quoted-printable');
 var utils = require('./utils');
@@ -71,25 +75,40 @@ function parse(ret) {
         encoding: null,
         type: null,
         data: null,
+        position: {
+            begin: 0, 
+            length: 0,
+        }
     };
     var singleObject = null;
     var dataArray = [];
+    var startPosition = 0;
+    var endPosition = 0;
 
     var parseLine = function (line, lineIndex, option) {
+        position += line.length;
         line = line.trim();
         if (line == boundary) {
+
             READING_STATE = READING_STATE_PART_HEADER;
 
             if (singleObject != null) {
                 ret.data[singleObject.name] = singleObject;
-                ret.data[singleObject.name].data = dataArray.join("\n").trim();
 
-                if (option.decodeQuotedPrintable && ret.data[singleObject.name].encoding == "quoted-printable") {
-                     ret.data[singleObject.name].data = quotedPrintable.decode(ret.data[singleObject.name].data);
+                if (option.mode == READ_MODE_ALL) {
+                    ret.data[singleObject.name].data = dataArray.join("\n").trim();
+
+                    if (option.decodeQuotedPrintable && ret.data[singleObject.name].encoding == "quoted-printable") {
+                         ret.data[singleObject.name].data = quotedPrintable.decode(ret.data[singleObject.name].data);
+                    }
                 }
+                ret.data[singleObject.name].position.begin = start;
+                ret.data[singleObject.name].position.length = position - start + 1;
+
             }
             singleObject = utils.objectAssign({}, singleObjectTemplate);
-
+            startPosition = position;
+            endPosition = 0;
             dataArray = [];
         }
 
@@ -122,9 +141,13 @@ function parse(ret) {
                 singleObject.encoding = contentTransferEncoding.toLowerCase();
             }
         } else if (READING_STATE == READING_STATE_PART_CONTENT) {
-            dataArray.push(line);
+            if (option.mode == READ_MODE_ALL) {
+                dataArray.push(line);
+            }
+            
         }
 
+        
         return true;
     }
     return parseLine;
@@ -132,5 +155,9 @@ function parse(ret) {
 }
 module.exports = {
     parseByStream: parseByStream,
-    parseByString: parseByString
+    parseByString: parseByString, 
+    constants: {
+        READ_MODE_ALL: READ_MODE_ALL,   
+        READ_MODE_POSITION: READ_MODE_POSITION, 
+    }
 };
