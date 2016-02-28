@@ -113,6 +113,10 @@ Avaiable items list here:
 ```
 
 ## TODO
+* More tests
+
 
 ## License
 The MIT License
+
+Welcome PR :)
